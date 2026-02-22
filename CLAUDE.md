@@ -5,6 +5,7 @@ Guidance for coding agents working in this repository.
 ## Project Snapshot
 
 - `lecoffre` is a TypeScript CLI package published to npm.
+- The project uses an internal CLI framework built on top of `@bomb.sh/args` (argv parsing) and `zod` (validation and type inference).
 - Runtime and package format are ESM-only (`"type": "module"`).
 - Minimum Node.js version is 24 (`"engines": { "node": ">=24" }`).
 - Tool versions are managed with mise (`.mise.toml`).
@@ -27,7 +28,9 @@ Guidance for coding agents working in this repository.
 ## Repository Layout
 
 - `bin/lecoffre.ts` - CLI entry point (with shebang)
-- `tests/*.test.ts` - CLI integration tests
+- `src/lib/` - core framework modules (command/option/argument definitions, parsing, help formatting)
+- `tests/*.test.ts` - unit and integration tests
+- `docs/` - developer documentation for the internal CLI framework (how to define commands, options, arguments)
 - `vitest.config.ts` - test include pattern (`tests/**/*.test.ts`)
 - `.changeset/config.json` - changeset and changelog configuration
 

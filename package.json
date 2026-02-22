@@ -24,6 +24,10 @@
     "version-packages": "changeset version",
     "release": "changeset publish"
   },
+  "dependencies": {
+    "@bomb.sh/args": "^0.3.1",
+    "zod": "^4.3.6"
+  },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",

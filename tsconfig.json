@@ -5,6 +5,7 @@
     "moduleResolution": "nodenext",
     "strict": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
     "noUncheckedIndexedAccess": true,
@@ -12,5 +13,5 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["bin/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]
+  "include": ["bin/**/*.ts", "src/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]
 }

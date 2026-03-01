@@ -13,6 +13,12 @@ export class CommandValidationError extends Error {
   }
 }
 
+export class CommandHelpRequested extends Error {
+  constructor() {
+    super("Help requested");
+  }
+}
+
 export function parseCommand(
   argv: Array<string>,
   command: AnyCommandDefinition,
@@ -22,6 +28,10 @@ export function parseCommand(
 
   const parseOpts = buildParseOptions(commandOptions);
   const raw = parse(argv, parseOpts);
+
+  if (raw["help"]) {
+    throw new CommandHelpRequested();
+  }
 
   const errors: Array<string> = [];
 
@@ -90,6 +100,9 @@ function buildParseOptions(options: Record<string, OptionDefinition>) {
       }
     }
   }
+
+  boolean.push("help");
+  alias["h"] = "help";
 
   return { boolean, string, alias };
 }

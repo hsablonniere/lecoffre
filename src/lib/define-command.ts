@@ -14,8 +14,8 @@ type InferArgsType<A extends ArgumentsArray> = {
 };
 
 type CommandHandler<O, A> = A extends ArgumentsArray
-  ? (options: InferOptionsType<O>, ...args: InferArgsType<A>) => void
-  : (options: InferOptionsType<O>) => void;
+  ? (options: InferOptionsType<O>, ...args: InferArgsType<A>) => void | Promise<void>
+  : (options: InferOptionsType<O>) => void | Promise<void>;
 
 export interface CommandDefinition<
   O extends OptionsRecord | undefined = OptionsRecord,
@@ -32,7 +32,7 @@ export interface AnyCommandDefinition {
   description: string;
   options?: OptionsRecord | undefined;
   args?: ArgumentsArray | undefined;
-  handler: (options: any, ...args: any[]) => void;
+  handler: (options: any, ...args: any[]) => void | Promise<void>;
 }
 
 export function defineCommand<

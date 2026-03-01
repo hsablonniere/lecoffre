@@ -40,5 +40,10 @@ try {
     console.error(formatCommandHelp(name, commandName, command));
     process.exit(1);
   }
-  throw error;
+  if (error instanceof Error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+  console.error("An unexpected error occurred");
+  process.exit(1);
 }

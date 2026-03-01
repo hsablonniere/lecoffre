@@ -11,8 +11,9 @@ describe("CLI", () => {
         lecoffre <command> [options]
 
       COMMANDS
-        list  List projects and their environments
-        load  Load variables into the current shell environment"
+        list    List projects and their environments
+        load    Load variables into the current shell environment
+        unload  Unload variables from the current shell environment"
     `);
   });
 
@@ -25,8 +26,9 @@ describe("CLI", () => {
         lecoffre <command> [options]
 
       COMMANDS
-        list  List projects and their environments
-        load  Load variables into the current shell environment"
+        list    List projects and their environments
+        load    Load variables into the current shell environment
+        unload  Unload variables from the current shell environment"
     `);
   });
 
@@ -67,8 +69,9 @@ describe("CLI", () => {
         lecoffre <command> [options]
 
       COMMANDS
-        list  List projects and their environments
-        load  Load variables into the current shell environment"
+        list    List projects and their environments
+        load    Load variables into the current shell environment
+        unload  Unload variables from the current shell environment"
     `);
   });
 });

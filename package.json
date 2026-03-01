@@ -38,6 +38,10 @@
     "oxlint": "^1.48.0",
     "vitest": "^4.0.18"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hsablonniere/lecoffre"
+  },
   "engines": {
     "node": ">=24"
   }

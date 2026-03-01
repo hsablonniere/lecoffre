@@ -13,7 +13,8 @@ describe("CLI", () => {
       COMMANDS
         list    List projects and their environments
         load    Load variables into the current shell environment
-        unload  Unload variables from the current shell environment"
+        unload  Unload variables from the current shell environment
+        import  Import variables from stdin (.env format)"
     `);
   });
 
@@ -28,33 +29,38 @@ describe("CLI", () => {
       COMMANDS
         list    List projects and their environments
         load    Load variables into the current shell environment
-        unload  Unload variables from the current shell environment"
+        unload  Unload variables from the current shell environment
+        import  Import variables from stdin (.env format)"
     `);
   });
 
   it("shows command help with --help flag", async () => {
-    const result = await runLecoffre(["list", "--help"]);
+    const result = await runLecoffre(["import", "--help"]);
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toMatchInlineSnapshot(`
       "USAGE
-        lecoffre list <project> [options]
+        lecoffre import [options]
 
-      ARGUMENTS
-        project  Project name (optional)"
+      OPTIONS
+        -p, --project <name>     Project name
+        -e, --environment <env>  Environment name (default: default)
+        -m, --merge              Merge with existing variables instead of replacing (default: false)"
     `);
   });
 
   it("shows command help with -h flag", async () => {
-    const result = await runLecoffre(["list", "-h"]);
+    const result = await runLecoffre(["import", "-h"]);
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toMatchInlineSnapshot(`
       "USAGE
-        lecoffre list <project> [options]
+        lecoffre import [options]
 
-      ARGUMENTS
-        project  Project name (optional)"
+      OPTIONS
+        -p, --project <name>     Project name
+        -e, --environment <env>  Environment name (default: default)
+        -m, --merge              Merge with existing variables instead of replacing (default: false)"
     `);
   });
 
@@ -71,7 +77,8 @@ describe("CLI", () => {
       COMMANDS
         list    List projects and their environments
         load    Load variables into the current shell environment
-        unload  Unload variables from the current shell environment"
+        unload  Unload variables from the current shell environment
+        import  Import variables from stdin (.env format)"
     `);
   });
 });

@@ -2,6 +2,7 @@
 
 import { parse } from "@bomb.sh/args";
 import packageJson from "../package.json" with { type: "json" };
+import { importCommand } from "../src/commands/import.command.ts";
 import { listCommand } from "../src/commands/list.command.ts";
 import { loadCommand } from "../src/commands/load.command.ts";
 import { unloadCommand } from "../src/commands/unload.command.ts";
@@ -18,6 +19,7 @@ const commands: Record<string, AnyCommandDefinition> = {
   list: listCommand,
   load: loadCommand,
   unload: unloadCommand,
+  import: importCommand,
 };
 
 const initial = parse(process.argv.slice(2));

@@ -2,17 +2,24 @@
 
 import { parse } from "@bomb.sh/args";
 import packageJson from "../package.json" with { type: "json" };
+import { listCommand } from "../src/commands/list.command.ts";
 import type { AnyCommandDefinition } from "../src/lib/define-command.ts";
 import { formatCommandHelp, formatErrors, formatGlobalHelp } from "../src/lib/format.ts";
-import { CommandValidationError, parseCommand } from "../src/lib/parse-command.ts";
+import {
+  CommandHelpRequested,
+  CommandValidationError,
+  parseCommand,
+} from "../src/lib/parse-command.ts";
 
 const { name } = packageJson;
-const commands: Record<string, AnyCommandDefinition> = {};
+const commands: Record<string, AnyCommandDefinition> = {
+  list: listCommand,
+};
 
-const initial = parse(process.argv.slice(2), { boolean: ["help"], alias: { h: "help" } });
+const initial = parse(process.argv.slice(2));
 const [commandNameRaw] = initial._;
 
-if (initial.help || commandNameRaw === undefined) {
+if (commandNameRaw === undefined) {
   console.log(formatGlobalHelp(name, commands));
   process.exit(0);
 }
@@ -26,15 +33,14 @@ if (command === undefined) {
   process.exit(1);
 }
 
-if (initial.help) {
-  console.log(formatCommandHelp(name, commandName, command));
-  process.exit(0);
-}
-
 try {
   const { options, args } = parseCommand(process.argv.slice(3), command);
-  command.handler(options, ...args);
+  await command.handler(options, ...args);
 } catch (error) {
+  if (error instanceof CommandHelpRequested) {
+    console.log(formatCommandHelp(name, commandName, command));
+    process.exit(0);
+  }
   if (error instanceof CommandValidationError) {
     console.error(formatErrors(error.errors) + "\n");
     console.error(formatCommandHelp(name, commandName, command));

@@ -1,7 +1,14 @@
 import { existsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { unlink, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { execa, type Options } from "execa";
+import { afterEach, beforeEach } from "vitest";
 
 type ExecaWithShellOptions = Omit<Options, "shell"> & { shell?: ShellName };
+
+const CLI = "bin/lecoffre.ts";
 
 export const shells = {
   bash: "/usr/bin/bash",
@@ -13,6 +20,37 @@ export type ShellName = keyof typeof shells;
 
 export function isShellAvailable(name: ShellName): boolean {
   return existsSync(shells[name]);
+}
+
+export function useStore() {
+  let storePath: string;
+
+  beforeEach(() => {
+    storePath = join(tmpdir(), `lecoffre-test-${randomUUID()}.json`);
+  });
+
+  afterEach(async () => {
+    try {
+      await unlink(storePath);
+    } catch {}
+  });
+
+  function run(args: Array<string>, options?: ExecaWithShellOptions) {
+    return runWithShell(CLI, args, {
+      ...options,
+      env: { LECOFFRE_STORAGE_PATH: storePath, ...options?.env },
+    });
+  }
+
+  function seed(data: Record<string, unknown>) {
+    return writeFile(storePath, JSON.stringify(data));
+  }
+
+  return { run, seed };
+}
+
+export function runLecoffre(args: Array<string>, options?: ExecaWithShellOptions) {
+  return runWithShell(CLI, args, options);
 }
 
 /**

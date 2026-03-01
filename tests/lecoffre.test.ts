@@ -1,32 +1,71 @@
 import { describe, expect, it } from "vitest";
-import { execaNode } from "execa";
-import packageJson from "../package.json" with { type: "json" };
-
-const { name } = packageJson;
+import { runLecoffre } from "./test-helpers.ts";
 
 describe("CLI", () => {
   it("shows help with --help flag", async () => {
-    const result = await execaNode("bin/lecoffre.ts", ["--help"]);
+    const result = await runLecoffre(["--help"]);
 
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain(`${name} <command> [options]`);
-    expect(result.stdout).not.toContain("COMMANDS");
+    expect(result.stdout).toMatchInlineSnapshot(`
+      "USAGE
+        lecoffre <command> [options]
+
+      COMMANDS
+        list  List projects and their environments"
+    `);
   });
 
   it("shows help when no command is given", async () => {
-    const result = await execaNode("bin/lecoffre.ts", []);
+    const result = await runLecoffre([]);
 
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain(`${name} <command> [options]`);
-    expect(result.stdout).not.toContain("COMMANDS");
+    expect(result.stdout).toMatchInlineSnapshot(`
+      "USAGE
+        lecoffre <command> [options]
+
+      COMMANDS
+        list  List projects and their environments"
+    `);
+  });
+
+  it("shows command help with --help flag", async () => {
+    const result = await runLecoffre(["list", "--help"]);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toMatchInlineSnapshot(`
+      "USAGE
+        lecoffre list <project> [options]
+
+      ARGUMENTS
+        project  Project name (optional)"
+    `);
+  });
+
+  it("shows command help with -h flag", async () => {
+    const result = await runLecoffre(["list", "-h"]);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toMatchInlineSnapshot(`
+      "USAGE
+        lecoffre list <project> [options]
+
+      ARGUMENTS
+        project  Project name (optional)"
+    `);
   });
 
   it("shows error and help for unknown command", async () => {
-    const result = await execaNode("bin/lecoffre.ts", ["unknown"], { reject: false });
+    const result = await runLecoffre(["unknown"]);
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain(`Unknown command "unknown" for "${name}"`);
-    expect(result.stderr).toContain(`${name} <command> [options]`);
-    expect(result.stderr).not.toContain("COMMANDS");
+    expect(result.stderr).toMatchInlineSnapshot(`
+      "Unknown command "unknown" for "lecoffre"
+
+      USAGE
+        lecoffre <command> [options]
+
+      COMMANDS
+        list  List projects and their environments"
+    `);
   });
 });

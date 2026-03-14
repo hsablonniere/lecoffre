@@ -43,7 +43,6 @@ function isVaultNotFound(error: unknown): boolean {
   return /isn't a vault/i.test(getStderr(error));
 }
 
-
 const execFile = promisify(execFileCb);
 
 async function execOp(...args: Array<string>): Promise<string> {

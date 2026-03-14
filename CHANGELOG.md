@@ -1,5 +1,11 @@
 # lecoffre
 
+## 0.2.1
+
+### Patch Changes
+
+- [#11](https://github.com/hsablonniere/lecoffre/pull/11) [`3e80bc3`](https://github.com/hsablonniere/lecoffre/commit/3e80bc366b5b22cdb8558d3ff93623d0cb9e6b37) Thanks [@hsablonniere](https://github.com/hsablonniere)! - Fix `ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING` when installed globally from npm by bundling sources with esbuild.
+
 ## 0.2.0
 
 ### Minor Changes

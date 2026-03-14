@@ -5,6 +5,7 @@ import { z } from "zod";
 import { defineCommand } from "../lib/define-command.ts";
 import { defineOption } from "../lib/define-option.ts";
 import { getStorage } from "../lib/get-storage.ts";
+import { ProjectNotFoundError } from "../lib/storage.ts";
 
 export const importCommand = defineCommand({
   description: "Import variables from stdin (.env format)",
@@ -37,7 +38,17 @@ export const importCommand = defineCommand({
     const input = await readStdin();
     const newVars = parseEnv(input) as Record<string, string>;
 
-    const existingVars = await storage.getVariables(project, options.environment);
+    let existingVars: Record<string, string>;
+    try {
+      const projectData = await storage.getProject(project);
+      existingVars = projectData[options.environment] ?? {};
+    } catch (error) {
+      if (error instanceof ProjectNotFoundError) {
+        existingVars = {};
+      } else {
+        throw error;
+      }
+    }
 
     const added: Array<string> = [];
     const updated: Array<string> = [];

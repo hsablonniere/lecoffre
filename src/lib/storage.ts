@@ -1,7 +1,28 @@
+export class ProjectNotFoundError extends Error {
+  readonly project: string;
+
+  constructor(project: string) {
+    super(`Project not found: ${project}`);
+    this.name = "ProjectNotFoundError";
+    this.project = project;
+  }
+}
+
+export class EnvironmentNotFoundError extends Error {
+  readonly project: string;
+  readonly environment: string;
+
+  constructor(project: string, environment: string) {
+    super(`Environment not found: ${environment}`);
+    this.name = "EnvironmentNotFoundError";
+    this.project = project;
+    this.environment = environment;
+  }
+}
+
 export abstract class Storage {
   abstract getProjects(): Promise<Array<string>>;
-  abstract getEnvironments(project: string): Promise<Array<string>>;
-  abstract getVariables(project: string, env: string): Promise<Record<string, string>>;
+  abstract getProject(project: string): Promise<Record<string, Record<string, string>>>;
   abstract setVariables(project: string, env: string, vars: Record<string, string>): Promise<void>;
   abstract deleteEnvironment(project: string, env: string): Promise<void>;
   abstract deleteProject(project: string): Promise<void>;

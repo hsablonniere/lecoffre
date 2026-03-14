@@ -5,6 +5,7 @@ import { defineCommand } from "../lib/define-command.ts";
 import { defineOption } from "../lib/define-option.ts";
 import { getStorage } from "../lib/get-storage.ts";
 import { detectShell, formatUnsetVariables } from "../lib/shell.ts";
+import { EnvironmentNotFoundError } from "../lib/storage.ts";
 
 export const unloadCommand = defineCommand({
   description: "Unload variables from the current shell environment",
@@ -28,17 +29,12 @@ export const unloadCommand = defineCommand({
     const storage = getStorage();
     const project = options.project ?? basename(await realpath(process.cwd()));
 
-    const projects = await storage.getProjects();
-    if (!projects.includes(project)) {
-      throw new Error(`Project not found: ${project}`);
+    const projectData = await storage.getProject(project);
+    const vars = projectData[options.environment];
+    if (vars === undefined) {
+      throw new EnvironmentNotFoundError(project, options.environment);
     }
 
-    const envs = await storage.getEnvironments(project);
-    if (!envs.includes(options.environment)) {
-      throw new Error(`Environment not found: ${options.environment}`);
-    }
-
-    const vars = await storage.getVariables(project, options.environment);
     const shell = detectShell();
     const output = formatUnsetVariables(shell, Object.keys(vars));
     if (output !== "") {

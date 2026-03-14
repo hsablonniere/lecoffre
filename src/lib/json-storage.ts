@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { EnvironmentNotFoundError, ProjectNotFoundError, Storage } from "./storage.ts";
+import { ProjectNotFoundError, Storage } from "./storage.ts";
 
 type StoreData = Record<string, Record<string, Record<string, string>>>;
 
@@ -39,20 +39,6 @@ export class JsonStorage extends Storage {
       throw new ProjectNotFoundError(project);
     }
     return Object.fromEntries(Object.entries(projectData).map(([env, vars]) => [env, { ...vars }]));
-  }
-
-  async getEnvironments(project: string): Promise<Array<string>> {
-    const projectData = await this.getProject(project);
-    return Object.keys(projectData);
-  }
-
-  async getVariables(project: string, env: string): Promise<Record<string, string>> {
-    const projectData = await this.getProject(project);
-    const envData = projectData[env];
-    if (envData === undefined) {
-      throw new EnvironmentNotFoundError(project, env);
-    }
-    return envData;
   }
 
   async setVariables(project: string, env: string, vars: Record<string, string>): Promise<void> {

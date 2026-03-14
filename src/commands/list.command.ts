@@ -8,7 +8,10 @@ export const listCommand = defineCommand({
   description: "List projects and their environments",
   args: [
     defineArgument({
-      schema: z.string().optional(),
+      schema: z
+        .string()
+        .refine((val) => !val.startsWith("-"), { message: 'must not start with "-"' })
+        .optional(),
       description: "Project name",
       placeholder: "project",
     }),

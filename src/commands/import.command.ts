@@ -12,7 +12,10 @@ export const importCommand = defineCommand({
   options: {
     project: defineOption({
       name: "project",
-      schema: z.string().optional(),
+      schema: z
+        .string()
+        .refine((val) => !val.startsWith("-"), { message: 'must not start with "-"' })
+        .optional(),
       description: "Project name",
       aliases: ["p"],
       placeholder: "name",

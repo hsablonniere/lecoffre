@@ -26,36 +26,36 @@ interface OpItemDetail {
 }
 
 export class OnePasswordStorage extends Storage {
-  #vault: string;
-  #vaultChecked = false;
+  private vault: string;
+  private vaultChecked = false;
 
   constructor(vault: string = VAULT) {
     super();
-    this.#vault = vault;
+    this.vault = vault;
   }
 
-  async #ensureVault(): Promise<void> {
-    if (this.#vaultChecked) {
+  private async ensureVault(): Promise<void> {
+    if (this.vaultChecked) {
       return;
     }
     try {
-      await $`op vault get ${this.#vault} --format=json`;
+      await $`op vault get ${this.vault} --format=json`;
     } catch {
-      await $`op vault create ${this.#vault}`;
+      await $`op vault create ${this.vault}`;
     }
-    this.#vaultChecked = true;
+    this.vaultChecked = true;
   }
 
-  async #getItem(project: string): Promise<OpItemDetail | null> {
+  private async getItem(project: string): Promise<OpItemDetail | null> {
     try {
-      const result = await $`op item get ${project} --vault=${this.#vault} --format=json`;
+      const result = await $`op item get ${project} --vault=${this.vault} --format=json`;
       return JSON.parse(result.stdout) as OpItemDetail;
     } catch {
       return null;
     }
   }
 
-  #getUserFields(fields: Array<OpField>): Array<OpField> {
+  private getUserFields(fields: Array<OpField>): Array<OpField> {
     return fields.filter(
       (field) => field.purpose === undefined && field.section?.label !== undefined,
     );
@@ -63,7 +63,7 @@ export class OnePasswordStorage extends Storage {
 
   async getProjects(): Promise<Array<string>> {
     try {
-      const result = await $`op item list --vault=${this.#vault} --format=json`;
+      const result = await $`op item list --vault=${this.vault} --format=json`;
       const items = JSON.parse(result.stdout) as Array<OpItemSummary>;
       return items.map((item) => item.title);
     } catch {
@@ -72,13 +72,13 @@ export class OnePasswordStorage extends Storage {
   }
 
   async getProject(project: string): Promise<Record<string, Record<string, string>>> {
-    const item = await this.#getItem(project);
+    const item = await this.getItem(project);
     if (item === null) {
       throw new ProjectNotFoundError(project);
     }
 
     const envs: Record<string, Record<string, string>> = {};
-    for (const field of this.#getUserFields(item.fields)) {
+    for (const field of this.getUserFields(item.fields)) {
       const sectionLabel = field.section?.label;
       if (sectionLabel !== undefined) {
         envs[sectionLabel] ??= {};
@@ -103,21 +103,21 @@ export class OnePasswordStorage extends Storage {
   }
 
   async setVariables(project: string, env: string, vars: Record<string, string>): Promise<void> {
-    await this.#ensureVault();
+    await this.ensureVault();
 
-    const item = await this.#getItem(project);
+    const item = await this.getItem(project);
 
     if (item === null) {
       const fieldAssignments = Object.entries(vars).map(
         ([key, value]) => `${env}.${key}[concealed]=${value}`,
       );
-      await $`op item create --vault=${this.#vault} --category=${"Secure Note"} --title=${project} ${fieldAssignments}`;
+      await $`op item create --vault=${this.vault} --category=${"Secure Note"} --title=${project} ${fieldAssignments}`;
       return;
     }
 
     const operations: Array<string> = [];
 
-    for (const field of this.#getUserFields(item.fields)) {
+    for (const field of this.getUserFields(item.fields)) {
       if (field.section?.label === env) {
         operations.push(`${env}.${field.label}[delete]`);
       }
@@ -128,17 +128,17 @@ export class OnePasswordStorage extends Storage {
     }
 
     if (operations.length > 0) {
-      await $`op item edit ${project} --vault=${this.#vault} ${operations}`;
+      await $`op item edit ${project} --vault=${this.vault} ${operations}`;
     }
   }
 
   async deleteEnvironment(project: string, env: string): Promise<void> {
-    const item = await this.#getItem(project);
+    const item = await this.getItem(project);
     if (item === null) {
       return;
     }
 
-    const userFields = this.#getUserFields(item.fields);
+    const userFields = this.getUserFields(item.fields);
     const sections = new Set<string>();
     const fieldsToDelete: Array<string> = [];
 
@@ -156,16 +156,16 @@ export class OnePasswordStorage extends Storage {
     }
 
     if (sections.size <= 1 && sections.has(env)) {
-      await $`op item delete ${project} --vault=${this.#vault}`;
+      await $`op item delete ${project} --vault=${this.vault}`;
       return;
     }
 
-    await $`op item edit ${project} --vault=${this.#vault} ${fieldsToDelete}`;
+    await $`op item edit ${project} --vault=${this.vault} ${fieldsToDelete}`;
   }
 
   async deleteProject(project: string): Promise<void> {
     try {
-      await $`op item delete ${project} --vault=${this.#vault}`;
+      await $`op item delete ${project} --vault=${this.vault}`;
     } catch {
       // Item doesn't exist, no-op
     }

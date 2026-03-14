@@ -7,11 +7,10 @@
     "url": "https://github.com/hsablonniere/lecoffre"
   },
   "bin": {
-    "lecoffre": "./bin/lecoffre.ts"
+    "lecoffre": "./dist/lecoffre.js"
   },
   "files": [
-    "bin",
-    "src",
+    "dist",
     "README.md",
     "LICENSE"
   ],
@@ -24,9 +23,11 @@
     "format": "oxfmt . --write",
     "format:check": "oxfmt . --check",
     "typecheck": "tsgo --noEmit",
+    "build": "esbuild bin/lecoffre.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/lecoffre.js",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test",
     "changeset": "changeset",
     "version-packages": "changeset version",
+    "prepack": "pnpm build",
     "release": "changeset publish"
   },
   "dependencies": {
@@ -38,6 +39,7 @@
     "@changesets/cli": "^2.29.8",
     "@types/node": "^25.2.3",
     "@typescript/native-preview": "^7.0.0-dev.20260217.1",
+    "esbuild": "^0.27.4",
     "execa": "^9.6.1",
     "oxfmt": "^0.33.0",
     "oxlint": "^1.48.0",

@@ -1,19 +1,19 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { Storage } from "./storage.ts";
+import { EnvironmentNotFoundError, ProjectNotFoundError, Storage } from "./storage.ts";
 
 type StoreData = Record<string, Record<string, Record<string, string>>>;
 
 export class JsonStorage extends Storage {
-  #filePath: string;
+  private readonly filePath: string;
 
   constructor(filePath: string) {
     super();
-    this.#filePath = filePath;
+    this.filePath = filePath;
   }
 
-  async #read(): Promise<StoreData> {
+  private async read(): Promise<StoreData> {
     try {
-      const content = await readFile(this.#filePath, "utf-8");
+      const content = await readFile(this.filePath, "utf-8");
       return JSON.parse(content) as StoreData;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === "ENOENT") {
@@ -23,61 +23,62 @@ export class JsonStorage extends Storage {
     }
   }
 
-  async #write(data: StoreData): Promise<void> {
-    await writeFile(this.#filePath, JSON.stringify(data, null, 2) + "\n");
+  private async write(data: StoreData): Promise<void> {
+    await writeFile(this.filePath, JSON.stringify(data, null, 2) + "\n");
   }
 
   async getProjects(): Promise<Array<string>> {
-    const data = await this.#read();
+    const data = await this.read();
     return Object.keys(data);
   }
 
-  async getEnvironments(project: string): Promise<Array<string>> {
-    const data = await this.#read();
+  async getProject(project: string): Promise<Record<string, Record<string, string>>> {
+    const data = await this.read();
     const projectData = data[project];
     if (projectData === undefined) {
-      return [];
+      throw new ProjectNotFoundError(project);
     }
+    return Object.fromEntries(Object.entries(projectData).map(([env, vars]) => [env, { ...vars }]));
+  }
+
+  async getEnvironments(project: string): Promise<Array<string>> {
+    const projectData = await this.getProject(project);
     return Object.keys(projectData);
   }
 
   async getVariables(project: string, env: string): Promise<Record<string, string>> {
-    const data = await this.#read();
-    const projectData = data[project];
-    if (projectData === undefined) {
-      return {};
-    }
+    const projectData = await this.getProject(project);
     const envData = projectData[env];
     if (envData === undefined) {
-      return {};
+      throw new EnvironmentNotFoundError(project, env);
     }
-    return { ...envData };
+    return envData;
   }
 
   async setVariables(project: string, env: string, vars: Record<string, string>): Promise<void> {
-    const data = await this.#read();
+    const data = await this.read();
     if (data[project] === undefined) {
       data[project] = {};
     }
     data[project][env] = vars;
-    await this.#write(data);
+    await this.write(data);
   }
 
   async deleteEnvironment(project: string, env: string): Promise<void> {
-    const data = await this.#read();
+    const data = await this.read();
     const projectData = data[project];
     if (projectData !== undefined) {
       delete projectData[env];
       if (Object.keys(projectData).length === 0) {
         delete data[project];
       }
-      await this.#write(data);
+      await this.write(data);
     }
   }
 
   async deleteProject(project: string): Promise<void> {
-    const data = await this.#read();
+    const data = await this.read();
     delete data[project];
-    await this.#write(data);
+    await this.write(data);
   }
 }

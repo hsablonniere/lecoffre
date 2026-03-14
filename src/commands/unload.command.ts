@@ -28,16 +28,6 @@ export const unloadCommand = defineCommand({
     const storage = getStorage();
     const project = options.project ?? basename(await realpath(process.cwd()));
 
-    const projects = await storage.getProjects();
-    if (!projects.includes(project)) {
-      throw new Error(`Project not found: ${project}`);
-    }
-
-    const envs = await storage.getEnvironments(project);
-    if (!envs.includes(options.environment)) {
-      throw new Error(`Environment not found: ${options.environment}`);
-    }
-
     const vars = await storage.getVariables(project, options.environment);
     const shell = detectShell();
     const output = formatUnsetVariables(shell, Object.keys(vars));

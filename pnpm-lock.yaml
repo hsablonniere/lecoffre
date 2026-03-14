@@ -11,6 +11,9 @@ importers:
       '@bomb.sh/args':
         specifier: ^0.3.1
         version: 0.3.1
+      execa:
+        specifier: ^9.6.1
+        version: 9.6.1
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -27,9 +30,6 @@ importers:
       '@typescript/native-preview':
         specifier: ^7.0.0-dev.20260217.1
         version: 7.0.0-dev.20260221.1
-      execa:
-        specifier: ^9.6.1
-        version: 9.6.1
       oxfmt:
         specifier: ^0.33.0
         version: 0.33.0

@@ -1,6 +1,6 @@
 import { execFile as execFileCb } from "node:child_process";
 import { promisify } from "node:util";
-import { ProjectNotFoundError, Storage } from "./storage.ts";
+import { ProjectNotFoundError, Storage, StorageNotInitializedError } from "./storage.ts";
 
 interface OpItemSummary {
   id: string;
@@ -39,6 +39,11 @@ function isItemNotFound(error: unknown): boolean {
   return /isn't an item/i.test(getStderr(error));
 }
 
+function isVaultNotFound(error: unknown): boolean {
+  return /isn't a vault/i.test(getStderr(error));
+}
+
+
 const execFile = promisify(execFileCb);
 
 async function execOp(...args: Array<string>): Promise<string> {
@@ -66,11 +71,28 @@ export class OnePasswordStorage extends Storage {
   }
 
   private rethrow(error: unknown): never {
+    if (isVaultNotFound(error)) {
+      throw new StorageNotInitializedError(
+        `Vault "${this.vault}" not found. Run "lecoffre init" to create it.`,
+      );
+    }
     const stderr = getStderr(error);
     if (stderr !== "") {
       throw new Error(stderr);
     }
     throw error;
+  }
+
+  async init(): Promise<void> {
+    try {
+      await execOp("vault", "get", this.vault, "--format", "json");
+    } catch (error) {
+      if (isVaultNotFound(error)) {
+        await execOp("vault", "create", this.vault);
+        return;
+      }
+      throw error;
+    }
   }
 
   private async getItem(project: string): Promise<OpItemDetail | null> {

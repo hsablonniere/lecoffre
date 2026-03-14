@@ -20,7 +20,15 @@ export class EnvironmentNotFoundError extends Error {
   }
 }
 
+export class StorageNotInitializedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StorageNotInitializedError";
+  }
+}
+
 export abstract class Storage {
+  abstract init(): Promise<void>;
   abstract getProjects(): Promise<Array<string>>;
   abstract getProject(project: string): Promise<Record<string, Record<string, string>>>;
   abstract setVariables(project: string, env: string, vars: Record<string, string>): Promise<void>;

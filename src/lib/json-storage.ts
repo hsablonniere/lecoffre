@@ -41,6 +41,10 @@ export class JsonStorage extends Storage {
     return Object.fromEntries(Object.entries(projectData).map(([env, vars]) => [env, { ...vars }]));
   }
 
+  async init(): Promise<void> {
+    // No initialization needed for JSON storage
+  }
+
   async setVariables(project: string, env: string, vars: Record<string, string>): Promise<void> {
     const data = await this.read();
     if (data[project] === undefined) {

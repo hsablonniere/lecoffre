@@ -1,5 +1,13 @@
 # lecoffre
 
+## 0.2.0
+
+### Minor Changes
+
+- [#9](https://github.com/hsablonniere/lecoffre/pull/9) [`5af76d2`](https://github.com/hsablonniere/lecoffre/commit/5af76d2f258b5123d59daa242927391219a5fc7f) Thanks [@hsablonniere](https://github.com/hsablonniere)! - Add 1Password as the default storage backend. Variables are now stored as Secure Notes in a dedicated vault. JSON file storage remains available via `LECOFFRE_STORAGE_PATH`. A new `lecoffre init` command creates the vault.
+
+  **Breaking:** `lecoffre list` now takes `project` as an option (`-p`) instead of a positional argument: `lecoffre list -p <project>`.
+
 ## 0.1.0
 
 ### Minor Changes

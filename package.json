@@ -2,6 +2,10 @@
   "name": "lecoffre",
   "version": "0.1.0",
   "description": "Work in progress CLI project.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hsablonniere/lecoffre"
+  },
   "bin": {
     "lecoffre": "./bin/lecoffre.ts"
   },
@@ -37,10 +41,6 @@
     "oxfmt": "^0.33.0",
     "oxlint": "^1.48.0",
     "vitest": "^4.0.18"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hsablonniere/lecoffre"
   },
   "engines": {
     "node": ">=24"

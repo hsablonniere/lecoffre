@@ -1,28 +1,23 @@
-import { z } from "zod";
-import { defineArgument } from "../lib/define-argument.ts";
 import { defineCommand } from "../lib/define-command.ts";
 import { getStorage } from "../lib/get-storage.ts";
+import { projectOption } from "../options/project.option.ts";
 import { ProjectNotFoundError } from "../lib/storage.ts";
 
 export const listCommand = defineCommand({
   description: "List projects and their environments",
-  args: [
-    defineArgument({
-      schema: z.string().optional(),
-      description: "Project name",
-      placeholder: "project",
-    }),
-  ],
-  async handler(_options, project) {
+  options: {
+    project: projectOption,
+  },
+  async handler(options) {
     const storage = getStorage();
 
-    if (project !== undefined) {
+    if (options.project !== undefined) {
       let projectData: Record<string, Record<string, string>>;
       try {
-        projectData = await storage.getProject(project);
+        projectData = await storage.getProject(options.project);
       } catch (error) {
         if (error instanceof ProjectNotFoundError) {
-          throw new Error(`Project not found: ${project}`);
+          throw new Error(`Project not found: ${options.project}`);
         }
         throw error;
       }

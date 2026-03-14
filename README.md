@@ -2,11 +2,15 @@
 
 > [!WARNING]
 > This project is a work in progress. Expect breaking changes.
-> Variables are currently stored in a plain JSON file. 1Password integration is planned as the default storage backend.
 
 Per-project environment variable manager for the shell.
 
 Store, load and unload environment variables by project and environment, directly in your current shell session.
+
+## Prerequisites
+
+- Node.js 24 or later
+- [1Password CLI (`op`)](https://developer.1password.com/docs/cli/get-started/) installed and signed in
 
 ## Installation
 
@@ -14,11 +18,36 @@ Store, load and unload environment variables by project and environment, directl
 npm install -g lecoffre
 ```
 
-Requires Node.js 24 or later.
+## Storage
+
+By default, lecoffre uses **1Password** as its storage backend. Variables are stored as Secure Notes inside a dedicated `lecoffre` vault.
+
+> [!NOTE]
+> When importing variables, field values are briefly visible in the process argument list (`/proc/<pid>/cmdline`). This is a limitation of the 1Password CLI, which does not support reading field values from stdin when spawned as a child process.
+
+To get started, initialize the vault:
+
+```sh
+lecoffre init
+```
+
+### Alternative: JSON file storage
+
+> [!CAUTION]
+> This storage backend is **not secure**. Variables are stored in plain text on disk.
+
+For development or environments without 1Password, set the `LECOFFRE_STORAGE_PATH` environment variable to use a local JSON file instead:
+
+```sh
+export LECOFFRE_STORAGE_PATH=/tmp/lecoffre.json
+```
 
 ## Quick start
 
 ```sh
+# Initialize the storage backend
+lecoffre init
+
 # Import variables from a .env file
 lecoffre import < .env
 
@@ -30,6 +59,10 @@ eval "$(lecoffre unload)"
 ```
 
 ## Commands
+
+### `lecoffre init`
+
+Initialize the storage backend. For 1Password, this creates the `lecoffre` vault if it doesn't exist.
 
 ### `lecoffre list [project]`
 

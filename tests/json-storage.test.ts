@@ -31,6 +31,16 @@ describe("JsonStorage", () => {
     await expect(storage.getProject("foo")).rejects.toThrow(ProjectNotFoundError);
   });
 
+  it("returns all environments and variables with getProject", async () => {
+    await storage.setVariables("app", "dev", { A: "1" });
+    await storage.setVariables("app", "staging", { B: "2", C: "3" });
+
+    expect(await storage.getProject("app")).toEqual({
+      dev: { A: "1" },
+      staging: { B: "2", C: "3" },
+    });
+  });
+
   it("creates project and environment on setVariables", async () => {
     await storage.setVariables("myproject", "production", { API_KEY: "secret", PORT: "3000" });
 

@@ -42,7 +42,7 @@ describe("list command", () => {
       },
     });
 
-    const result = await run(["list", "myproject"]);
+    const result = await run(["list", "-p", "myproject"]);
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toMatchInlineSnapshot(`
@@ -52,7 +52,7 @@ describe("list command", () => {
   });
 
   it("exits with error for unknown project", async () => {
-    const result = await run(["list", "nonexistent"]);
+    const result = await run(["list", "-p", "nonexistent"]);
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toMatchInlineSnapshot(`"Project not found: nonexistent"`);

@@ -11,6 +11,7 @@ describe("CLI", () => {
         lecoffre <command> [options]
 
       COMMANDS
+        init    Initialize the storage backend
         list    List projects and their environments
         load    Load variables into the current shell environment
         unload  Unload variables from the current shell environment
@@ -27,6 +28,7 @@ describe("CLI", () => {
         lecoffre <command> [options]
 
       COMMANDS
+        init    Initialize the storage backend
         list    List projects and their environments
         load    Load variables into the current shell environment
         unload  Unload variables from the current shell environment
@@ -64,6 +66,9 @@ describe("CLI", () => {
     `);
   });
 
+  // "lecoffre init" is not tested here because it requires the 1Password CLI.
+  // It is covered by the OnePasswordStorage integration tests.
+
   it("shows error and help for unknown command", async () => {
     const result = await runLecoffre(["unknown"]);
 
@@ -75,6 +80,7 @@ describe("CLI", () => {
         lecoffre <command> [options]
 
       COMMANDS
+        init    Initialize the storage backend
         list    List projects and their environments
         load    Load variables into the current shell environment
         unload  Unload variables from the current shell environment

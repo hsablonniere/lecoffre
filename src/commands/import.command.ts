@@ -5,25 +5,15 @@ import { z } from "zod";
 import { defineCommand } from "../lib/define-command.ts";
 import { defineOption } from "../lib/define-option.ts";
 import { getStorage } from "../lib/get-storage.ts";
+import { environmentOption } from "../options/environment.option.ts";
+import { projectOption } from "../options/project.option.ts";
 import { ProjectNotFoundError } from "../lib/storage.ts";
 
 export const importCommand = defineCommand({
   description: "Import variables from stdin (.env format)",
   options: {
-    project: defineOption({
-      name: "project",
-      schema: z.string().optional(),
-      description: "Project name",
-      aliases: ["p"],
-      placeholder: "name",
-    }),
-    environment: defineOption({
-      name: "environment",
-      schema: z.string().default("default"),
-      description: "Environment name",
-      aliases: ["e"],
-      placeholder: "env",
-    }),
+    project: projectOption,
+    environment: environmentOption,
     merge: defineOption({
       name: "merge",
       schema: z.boolean().default(false),

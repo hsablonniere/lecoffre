@@ -29,12 +29,27 @@ export function parseCommand(
   const parseOpts = buildParseOptions(commandOptions);
   const raw = parse(argv, parseOpts);
 
+  // --help takes priority over validation errors
   if (raw["help"]) {
     throw new CommandHelpRequested();
   }
 
   const errors: Array<string> = [];
 
+  const knownOptions = new Set<string>(["help", "h"]);
+  for (const opt of Object.values(commandOptions)) {
+    knownOptions.add(opt.name);
+    if (opt.aliases !== undefined) {
+      for (const a of opt.aliases) {
+        knownOptions.add(a);
+      }
+    }
+  }
+
+  // Unknown options
+  errors.push(...findUnknownOptions(raw, knownOptions));
+
+  // Option validation
   const options: Record<string, unknown> = {};
   for (const [key, opt] of Object.entries(commandOptions)) {
     const rawValue = raw[opt.name] as unknown;
@@ -47,7 +62,7 @@ export function parseCommand(
     } catch (error) {
       if (error instanceof ZodError) {
         for (const issue of error.issues) {
-          errors.push(`option "--${opt.name}": ${issue.message}`);
+          errors.push(`option "${formatOptionLabel(opt)}": ${issue.message}`);
         }
       } else {
         throw error;
@@ -55,6 +70,14 @@ export function parseCommand(
     }
   }
 
+  // Unexpected arguments
+  if (raw._.length > commandArgs.length) {
+    for (let i = commandArgs.length; i < raw._.length; i++) {
+      errors.push(`argument "${raw._[i]}": unexpected argument`);
+    }
+  }
+
+  // Argument validation
   const args: Array<unknown> = [];
   for (let i = 0; i < commandArgs.length; i++) {
     const argDef = commandArgs[i]!;
@@ -81,6 +104,24 @@ export function parseCommand(
   }
 
   return { options, args };
+}
+
+export function findUnknownOptions(
+  parsed: Record<string, unknown>,
+  knownOptions: Set<string>,
+): Array<string> {
+  const errors: Array<string> = [];
+  for (const key of Object.keys(parsed)) {
+    if (key !== "_" && !knownOptions.has(key)) {
+      errors.push(`option "${key}": unknown option`);
+    }
+  }
+  return errors;
+}
+
+function formatOptionLabel(opt: OptionDefinition): string {
+  const parts = opt.aliases !== undefined ? [...opt.aliases, opt.name] : [opt.name];
+  return parts.join("/");
 }
 
 function buildParseOptions(options: Record<string, OptionDefinition>) {

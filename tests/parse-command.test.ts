@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { CommandValidationError, parseCommand } from "../src/lib/parse-command.ts";
+import {
+  CommandHelpRequested,
+  CommandValidationError,
+  parseCommand,
+} from "../src/lib/parse-command.ts";
 import type { AnyCommandDefinition } from "../src/lib/define-command.ts";
 
 describe("parseCommand", () => {
@@ -56,7 +60,7 @@ describe("parseCommand", () => {
 
       expect(() => parseCommand([], command)).toThrow(CommandValidationError);
       expect(() => parseCommand([], command)).toThrow(
-        'option "--name": Invalid input: expected string, received undefined',
+        'option "name": Invalid input: expected string, received undefined',
       );
     });
 
@@ -223,6 +227,129 @@ describe("parseCommand", () => {
     });
   });
 
+  describe("unknown options and extra arguments", () => {
+    it("throws on unknown option", () => {
+      const command: AnyCommandDefinition = {
+        description: "test",
+        handler: () => {},
+      };
+
+      expect(() => parseCommand(["--unknown", "value"], command)).toThrow(CommandValidationError);
+      expect(() => parseCommand(["--unknown", "value"], command)).toThrow(
+        'option "unknown": unknown option',
+      );
+    });
+
+    it("throws on unknown boolean-style option", () => {
+      const command: AnyCommandDefinition = {
+        description: "test",
+        handler: () => {},
+      };
+
+      expect(() => parseCommand(["--verbose"], command)).toThrow(CommandValidationError);
+      expect(() => parseCommand(["--verbose"], command)).toThrow(
+        'option "verbose": unknown option',
+      );
+    });
+
+    it("throws on single-char unknown option", () => {
+      const command: AnyCommandDefinition = {
+        description: "test",
+        handler: () => {},
+      };
+
+      expect(() => parseCommand(["-o"], command)).toThrow(CommandValidationError);
+      expect(() => parseCommand(["-o"], command)).toThrow('option "o": unknown option');
+    });
+
+    it("throws on multiple unknown options", () => {
+      const command: AnyCommandDefinition = {
+        description: "test",
+        handler: () => {},
+      };
+
+      const getError = () => {
+        try {
+          parseCommand(["--foo", "--bar"], command);
+        } catch (error) {
+          return error;
+        }
+        return undefined;
+      };
+
+      const error = getError();
+      expect(error).toBeInstanceOf(CommandValidationError);
+      const validationError = error as CommandValidationError;
+      expect(validationError.errors).toHaveLength(2);
+      expect(validationError.errors[0]).toBe('option "foo": unknown option');
+      expect(validationError.errors[1]).toBe('option "bar": unknown option');
+    });
+
+    it("accumulates unknown option errors with validation errors", () => {
+      const command: AnyCommandDefinition = {
+        description: "test",
+        options: {
+          name: {
+            name: "name",
+            schema: z.string(),
+            description: "Name",
+          },
+        },
+        handler: () => {},
+      };
+
+      const getError = () => {
+        try {
+          parseCommand(["--unknown", "value"], command);
+        } catch (error) {
+          return error;
+        }
+        return undefined;
+      };
+
+      const error = getError();
+      expect(error).toBeInstanceOf(CommandValidationError);
+      const validationError = error as CommandValidationError;
+      expect(
+        validationError.errors.some((e) => e.includes('option "unknown": unknown option')),
+      ).toBe(true);
+      expect(validationError.errors.some((e) => e.includes('option "name"'))).toBe(true);
+    });
+
+    it("throws on extra positional arguments", () => {
+      const command: AnyCommandDefinition = {
+        description: "test",
+        args: [{ schema: z.string(), description: "Name", placeholder: "name" }],
+        handler: () => {},
+      };
+
+      const getError = () => {
+        try {
+          parseCommand(["one", "two", "three"], command);
+        } catch (error) {
+          return error;
+        }
+        return undefined;
+      };
+
+      const error = getError();
+      expect(error).toBeInstanceOf(CommandValidationError);
+      const validationError = error as CommandValidationError;
+      expect(validationError.errors).toHaveLength(2);
+      expect(validationError.errors[0]).toBe('argument "two": unexpected argument');
+      expect(validationError.errors[1]).toBe('argument "three": unexpected argument');
+    });
+
+    it("--help still works with unknown options", () => {
+      const command: AnyCommandDefinition = {
+        description: "test",
+        handler: () => {},
+      };
+
+      expect(() => parseCommand(["--unknown", "--help"], command)).toThrow(CommandHelpRequested);
+    });
+  });
+
   describe("validation", () => {
     it("reports minimum length error from z.string().min()", () => {
       const command: AnyCommandDefinition = {
@@ -239,8 +366,25 @@ describe("parseCommand", () => {
 
       expect(() => parseCommand(["--name", "ab"], command)).toThrow(CommandValidationError);
       expect(() => parseCommand(["--name", "ab"], command)).toThrow(
-        'option "--name": Too small: expected string to have >=3 characters',
+        'option "name": Too small: expected string to have >=3 characters',
       );
+    });
+
+    it("includes aliases in option label", () => {
+      const command: AnyCommandDefinition = {
+        description: "test",
+        options: {
+          project: {
+            name: "project",
+            schema: z.string(),
+            description: "Project",
+            aliases: ["p"],
+          },
+        },
+        handler: () => {},
+      };
+
+      expect(() => parseCommand(["-p"], command)).toThrow('option "p/project"');
     });
 
     it("reports invalid enum value from z.enum()", () => {
@@ -257,7 +401,7 @@ describe("parseCommand", () => {
       };
 
       expect(() => parseCommand(["--format", "xml"], command)).toThrow(CommandValidationError);
-      expect(() => parseCommand(["--format", "xml"], command)).toThrow('option "--format":');
+      expect(() => parseCommand(["--format", "xml"], command)).toThrow('option "format":');
     });
 
     it("coerces string to number with z.coerce.number()", () => {
@@ -293,7 +437,7 @@ describe("parseCommand", () => {
 
       expect(() => parseCommand(["--port", "0"], command)).toThrow(CommandValidationError);
       expect(() => parseCommand(["--port", "0"], command)).toThrow(
-        'option "--port": Too small: expected number to be >=1',
+        'option "port": Too small: expected number to be >=1',
       );
     });
 
@@ -345,7 +489,7 @@ describe("parseCommand", () => {
       expect(error).toBeInstanceOf(CommandValidationError);
       const validationError = error as CommandValidationError;
       expect(validationError.errors).toHaveLength(2);
-      expect(validationError.errors[0]).toContain('option "--port"');
+      expect(validationError.errors[0]).toContain('option "port"');
       expect(validationError.errors[1]).toContain("argument <file>");
     });
   });

@@ -74,7 +74,8 @@ describe("CLI", () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toMatchInlineSnapshot(`
-      "Unknown command "unknown" for "lecoffre"
+      "ERRORS
+        command "unknown": unknown command
 
       USAGE
         lecoffre <command> [options]

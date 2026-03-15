@@ -445,23 +445,23 @@ describe("formatCommandHelp", () => {
 
 describe("formatErrors", () => {
   it("formats a single error with ERRORS header and indentation", () => {
-    const output = formatErrors(['option "--port": Too small: expected number to be >=1']);
+    const output = formatErrors(['option "port": Too small: expected number to be >=1']);
 
     expect(output).toMatchInlineSnapshot(`
       "ERRORS
-        option "--port": Too small: expected number to be >=1"
+        option "port": Too small: expected number to be >=1"
     `);
   });
 
   it("formats multiple errors with one error per line", () => {
     const output = formatErrors([
-      'option "--port": Too small: expected number to be >=1',
+      'option "port": Too small: expected number to be >=1',
       "argument <file>: Invalid input: expected string, received undefined",
     ]);
 
     expect(output).toMatchInlineSnapshot(`
       "ERRORS
-        option "--port": Too small: expected number to be >=1
+        option "port": Too small: expected number to be >=1
         argument <file>: Invalid input: expected string, received undefined"
     `);
   });

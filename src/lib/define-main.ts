@@ -1,7 +1,12 @@
 import { parse } from "@bomb.sh/args";
 import type { AnyCommandDefinition } from "./define-command.ts";
 import { formatCommandHelp, formatErrors, formatGlobalHelp } from "./format.ts";
-import { CommandHelpRequested, CommandValidationError, parseCommand } from "./parse-command.ts";
+import {
+  CommandHelpRequested,
+  CommandValidationError,
+  findUnknownOptions,
+  parseCommand,
+} from "./parse-command.ts";
 
 interface MainDefinition {
   name: string;
@@ -19,6 +24,14 @@ export function defineMain({ name, commands }: MainDefinition) {
       const [commandNameRaw] = initial._;
 
       if (commandNameRaw === undefined) {
+        // --help takes priority over unknown option errors
+        const unknownErrors = findUnknownOptions(initial, new Set(["help", "h"]));
+        if (unknownErrors.length > 0 && !initial["help"] && !initial["h"]) {
+          console.error(formatErrors(unknownErrors) + "\n");
+          console.error(formatGlobalHelp(name, commands));
+          return { exitCode: 1 };
+        }
+
         console.log(formatGlobalHelp(name, commands));
         return { exitCode: 0 };
       }
@@ -27,7 +40,7 @@ export function defineMain({ name, commands }: MainDefinition) {
       const command = commands[commandName];
 
       if (command === undefined) {
-        console.error(`Unknown command "${commandName}" for "${name}"\n`);
+        console.error(formatErrors([`command "${commandName}": unknown command`]) + "\n");
         console.error(formatGlobalHelp(name, commands));
         return { exitCode: 1 };
       }

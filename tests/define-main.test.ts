@@ -61,7 +61,17 @@ describe("defineMain", () => {
     const result = await main.run(["node", "mycli", "unknown"]);
 
     expect(result.exitCode).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith('Unknown command "unknown" for "mycli"\n');
+    expect(errorSpy.mock.calls[0]![0]).toContain('command "unknown": unknown command');
+    expect(errorSpy.mock.calls[1]![0]).toContain("mycli <command> [options]");
+  });
+
+  it("reports unknown command even with unknown options", async () => {
+    const main = createMain();
+
+    const result = await main.run(["node", "mycli", "unknown", "--foo"]);
+
+    expect(result.exitCode).toBe(1);
+    expect(errorSpy.mock.calls[0]![0]).toContain('command "unknown": unknown command');
     expect(errorSpy.mock.calls[1]![0]).toContain("mycli <command> [options]");
   });
 
@@ -105,6 +115,45 @@ describe("defineMain", () => {
     expect(result.exitCode).toBe(1);
     expect(errorSpy).toHaveBeenCalled();
     expect(errorSpy.mock.calls[0]![0]).toContain("ERRORS");
+  });
+
+  it("shows error for unknown global option", async () => {
+    const main = createMain();
+
+    const result = await main.run(["node", "mycli", "--unknown"]);
+
+    expect(result.exitCode).toBe(1);
+    expect(errorSpy.mock.calls[0]![0]).toContain('option "unknown": unknown option');
+    expect(errorSpy.mock.calls[1]![0]).toContain("mycli <command> [options]");
+  });
+
+  it("throws on single-char unknown global option", async () => {
+    const main = createMain();
+
+    const result = await main.run(["node", "mycli", "-x"]);
+
+    expect(result.exitCode).toBe(1);
+    expect(errorSpy.mock.calls[0]![0]).toContain('option "x": unknown option');
+  });
+
+  it("shows global help with --help flag", async () => {
+    const main = createMain();
+
+    const result = await main.run(["node", "mycli", "--help"]);
+
+    expect(result.exitCode).toBe(0);
+    expect(logSpy).toHaveBeenCalledOnce();
+    expect(logSpy.mock.calls[0]![0]).toContain("mycli <command> [options]");
+  });
+
+  it("--help takes priority over unknown global options", async () => {
+    const main = createMain();
+
+    const result = await main.run(["node", "mycli", "--unknown", "--help"]);
+
+    expect(result.exitCode).toBe(0);
+    expect(logSpy).toHaveBeenCalledOnce();
+    expect(logSpy.mock.calls[0]![0]).toContain("mycli <command> [options]");
   });
 
   it("shows error.message on stderr and exits 1 when handler throws", async () => {
